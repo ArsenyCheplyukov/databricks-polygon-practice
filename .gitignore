@@ -1,0 +1,31 @@
+# Agent/prompt files — keep public repo clean
+.databricks-polygon-agent-prompt.md
+.agents/
+docs/agents/
+AGENTS.md
+.scratch/
+
+# Environment secrets
+.env
+
+# Learner reference solutions
+**/solution/
+
+# Generated data
+data/generated/
+
+# Spark scratch dirs
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Python caches
+.pytest_cache/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Docker volume folders if mounted into tree
+marquez-db-data/
+postgres-data/
+unity-catalog-data/
