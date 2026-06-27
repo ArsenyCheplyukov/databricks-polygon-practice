@@ -1,6 +1,8 @@
 # Agent/prompt files — keep public repo clean
 .databricks-polygon-agent-prompt.md
+databricks-polygon-agent-prompt.md
 .agents/
+docs/
 docs/agents/
 AGENTS.md
 .scratch/
