@@ -1,0 +1,44 @@
+FROM python:3.13-slim
+
+ENV JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+# OpenLineage 1.50.0 reflects on SecureClassLoader.defineClass; JDK 21 hides it by default.
+ENV JAVA_TOOL_OPTIONS="--add-opens=java.base/java.security=ALL-UNNAMED"
+# Tells common.spark_session.lineage_session that jars are already on the app classpath.
+ENV POLYGON_LINEAGE_SIDECAR=1
+
+# Install Temurin JDK 21 and basic build deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    apt-transport-https \
+    gnupg \
+    curl \
+    && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public \
+    | gpg --dearmor -o /usr/share/keyrings/adoptium.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] \
+    https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" \
+    > /etc/apt/sources.list.d/adoptium.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends temurin-21-jdk \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements-lineage.txt .
+RUN pip install --no-cache-dir -r requirements-lineage.txt
+
+# Put Delta + OpenLineage jars in pyspark/jars so they share the app classloader.
+# This avoids the cross-classloader reflection that breaks dataset capture on Spark 4.x.
+COPY pom-lineage.xml /tmp/pom.xml
+RUN apt-get update && apt-get install -y --no-install-recommends maven && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /tmp/mvn-jars \
+    && cd /tmp && mvn -f pom.xml dependency:copy-dependencies -DoutputDirectory=/tmp/mvn-jars -q \
+    && cp /tmp/mvn-jars/*.jar /usr/local/lib/python3.13/site-packages/pyspark/jars/ \
+    && rm -rf /tmp/mvn-jars /tmp/pom.xml /root/.m2
+
+COPY . .
+
+# Keep the sidecar alive so `docker compose exec` can run tests against it.
+CMD ["tail", "-f", "/dev/null"]

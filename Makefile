@@ -16,7 +16,7 @@ generate-data:
 	docker compose exec -T spark python data/generate.py --scale small
 
 test:
-	docker compose exec -T -e POLYGON_USE_SOLUTION=$(or $(POLYGON_USE_SOLUTION),0) spark pytest -q
+	docker compose exec -T -e POLYGON_USE_SOLUTION=$(or $(POLYGON_USE_SOLUTION),0) spark pytest -q --ignore=layer4_lineage
 
 test-l1:
 	docker compose exec -T -e POLYGON_USE_SOLUTION=$(or $(POLYGON_USE_SOLUTION),0) spark pytest -q layer1_delta_core/tests
@@ -28,7 +28,7 @@ test-l3:
 	docker compose exec -T -e POLYGON_USE_SOLUTION=$(or $(POLYGON_USE_SOLUTION),0) spark pytest -q layer3_medallion/tests
 
 test-l4:
-	docker compose exec -T -e POLYGON_USE_SOLUTION=$(or $(POLYGON_USE_SOLUTION),0) spark pytest -q layer4_lineage/tests
+	docker compose exec -T -e POLYGON_USE_SOLUTION=$(or $(POLYGON_USE_SOLUTION),0) spark-lineage pytest -q layer4_lineage/tests
 
 test-l5:
 	docker compose exec -T -e POLYGON_USE_SOLUTION=$(or $(POLYGON_USE_SOLUTION),0) spark pytest -q layer5_unity_catalog/tests

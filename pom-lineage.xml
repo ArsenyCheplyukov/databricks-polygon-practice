@@ -1,0 +1,18 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>tmp</groupId>
+  <artifactId>polygon-lineage</artifactId>
+  <version>1.0</version>
+  <dependencies>
+    <dependency>
+      <groupId>io.delta</groupId>
+      <artifactId>delta-spark_2.13</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.openlineage</groupId>
+      <artifactId>openlineage-spark_2.13</artifactId>
+      <version>1.50.0</version>
+    </dependency>
+  </dependencies>
+</project>
