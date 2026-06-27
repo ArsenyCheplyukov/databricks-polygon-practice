@@ -9,8 +9,8 @@ Local, offline Docker sandbox for practicing the Databricks-internals half that 
 | **Layer 1 — Delta core** | The substrate every migrated table lands on: transaction log, ACID, time travel. |
 | **Layer 2 — Delta ops** | Write-side verbs used in every migrated pipeline: MERGE, schema enforcement/evolution, OPTIMIZE, ZORDER, VACUUM. |
 | **Layer 3 — Medallion** | How to structure migrated pipelines: bronze → silver → gold, idempotent end-to-end. |
-| **Layer 4 — Lineage** | "Where did this number come from?" answered automatically with OpenLineage + Marquez. |
-| **Layer 5 — Unity Catalog OSS** | Three-level namespace + governance model (stretch; skipped if integration is unstable). |
+| **Layer 4 — Lineage** | "Where did this number come from?" answered automatically with OpenLineage + Marquez. Runs in an isolated Spark 4.0.0 sidecar. |
+| **Layer 5 — Unity Catalog OSS** | Three-level namespace + governance model via local OSS UC server. |
 
 ## Quickstart
 
