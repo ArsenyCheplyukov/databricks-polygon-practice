@@ -48,15 +48,14 @@ def lineage_session(app_name: str, namespace: str) -> SparkSession:
 
 
 def uc_session(app_name: str) -> SparkSession:
-    """Delta + Unity Catalog OSS connector for Layer 5."""
-    packages = (
-        "io.delta:delta-spark_4.1_2.13:4.1.0,"
-        "io.unitycatalog:unitycatalog-spark_2.13:0.4.0"
-    )
+    """Delta + Unity Catalog OSS connector for Layer 5.
+
+    The Unity Catalog Spark connector jars are pre-baked into the image
+    (see Dockerfile.spark) so Layer 5 can run without runtime network access.
+    """
     builder = SparkSession.builder \
         .appName(app_name) \
         .master("local[*]") \
-        .config("spark.jars.packages", packages) \
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
         .config("spark.sql.catalog.unity", "io.unitycatalog.spark.UCSingleCatalog") \

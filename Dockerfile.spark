@@ -25,6 +25,38 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir jupyterlab
 
+# Pre-download Delta Lake and the Unity Catalog Spark connector + transitive
+# deps so Layer 5 can share the app classloader and run without runtime network.
+RUN apt-get update && apt-get install -y --no-install-recommends maven \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /tmp/uc-jars \
+    && echo '<?xml version="1.0" encoding="UTF-8"?>' > /tmp/pom.xml \
+    && echo '<project xmlns="http://maven.apache.org/POM/4.0.0"' >> /tmp/pom.xml \
+    && echo '         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' >> /tmp/pom.xml \
+    && echo '         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">' >> /tmp/pom.xml \
+    && echo '  <modelVersion>4.0.0</modelVersion>' >> /tmp/pom.xml \
+    && echo '  <groupId>com.polygon</groupId>' >> /tmp/pom.xml \
+    && echo '  <artifactId>uc-vendor</artifactId>' >> /tmp/pom.xml \
+    && echo '  <version>1.0.0</version>' >> /tmp/pom.xml \
+    && echo '  <packaging>pom</packaging>' >> /tmp/pom.xml \
+    && echo '  <dependencies>' >> /tmp/pom.xml \
+    && echo '    <dependency>' >> /tmp/pom.xml \
+    && echo '      <groupId>io.delta</groupId>' >> /tmp/pom.xml \
+    && echo '      <artifactId>delta-spark_4.1_2.13</artifactId>' >> /tmp/pom.xml \
+    && echo '      <version>4.1.0</version>' >> /tmp/pom.xml \
+    && echo '    </dependency>' >> /tmp/pom.xml \
+    && echo '    <dependency>' >> /tmp/pom.xml \
+    && echo '      <groupId>io.unitycatalog</groupId>' >> /tmp/pom.xml \
+    && echo '      <artifactId>unitycatalog-spark_2.13</artifactId>' >> /tmp/pom.xml \
+    && echo '      <version>0.4.0</version>' >> /tmp/pom.xml \
+    && echo '    </dependency>' >> /tmp/pom.xml \
+    && echo '  </dependencies>' >> /tmp/pom.xml \
+    && echo '</project>' >> /tmp/pom.xml \
+    && cd /tmp && mvn -f pom.xml dependency:copy-dependencies -DoutputDirectory=/tmp/uc-jars -q \
+    && mkdir -p /usr/local/lib/python3.13/site-packages/pyspark/jars \
+    && cp -n /tmp/uc-jars/*.jar /usr/local/lib/python3.13/site-packages/pyspark/jars/ \
+    && rm -rf /tmp/uc-jars /tmp/pom.xml /root/.m2
+
 COPY . .
 
 EXPOSE 8888
